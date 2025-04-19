@@ -1,0 +1,30 @@
+[
+  {
+    "id": 0,
+    "name": "All"
+  },
+  {
+    "id": 1,
+    "name": "Dessert"
+  },
+  {
+    "id": 2,
+    "name": "Lunch"
+  },
+  {
+    "id": 3,
+    "name": "Dinner"
+  },
+  {
+    "id": 4,
+    "name": "Local"
+  },
+  {
+    "id": 5,
+    "name": "Chinese"
+  },
+  {
+    "id": 6,
+    "name": "Western"
+  }
+]

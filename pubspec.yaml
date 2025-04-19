@@ -1,0 +1,33 @@
+name: simple_recipe_app
+description: "A new Flutter project."
+publish_to: 'none'
+version: 0.1.0
+
+environment:
+  sdk: ^3.7.0
+
+dependencies:
+  cached_network_image: ^3.4.1
+  dio: ^5.8.0+1
+  drift: ^2.26.0
+  drift_flutter: ^0.2.4
+  equatable: ^2.0.7
+  flutter:
+    sdk: flutter
+  flutter_bloc: ^9.1.0
+  get_it: ^8.0.3
+  image_picker: ^1.1.2
+  path_provider: ^2.1.5
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+  build_runner: ^2.4.15
+  drift_dev: ^2.26.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/
+    - assets/json/
