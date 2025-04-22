@@ -173,31 +173,36 @@ class _NewRecipeScreenState extends State<NewRecipeScreen> {
               const SizedBox(height: 16),
               ElevatedButton(
                 onPressed: () {
-                  if (_formKey.currentState!.validate() &&
-                      _imageController.text.isNotEmpty) {
-                    final file = File(
-                      '${Helper.directory?.path}/${_imageController.text.split('/').last}',
-                    );
-                    file.writeAsBytesSync(
-                      File(_imageController.text).readAsBytesSync(),
-                    );
-                    final recipe = Recipe(
-                      typeId: _selectedTypeId,
-                      name: _nameController.text,
-                      image: _imageController.text.split('/').last,
-                      ingredients:
-                          _ingredientsController.text
-                              .split('\n')
-                              .where((element) => element.isNotEmpty)
-                              .toList(),
-                      steps:
-                          _stepsController.text
-                              .split('\n')
-                              .where((element) => element.isNotEmpty)
-                              .toList(),
-                    );
-                    sl<DatabaseHelper>().insertRecipe(recipe);
-                    Navigator.pop(context);
+                  if (_formKey.currentState!.validate()) {
+                    if (_imageController.text.isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Please select an image')),
+                      );
+                    } else {
+                      final file = File(
+                        '${Helper.directory?.path}/${_imageController.text.split('/').last}',
+                      );
+                      file.writeAsBytesSync(
+                        File(_imageController.text).readAsBytesSync(),
+                      );
+                      final recipe = Recipe(
+                        typeId: _selectedTypeId,
+                        name: _nameController.text,
+                        image: _imageController.text.split('/').last,
+                        ingredients:
+                            _ingredientsController.text
+                                .split('\n')
+                                .where((element) => element.isNotEmpty)
+                                .toList(),
+                        steps:
+                            _stepsController.text
+                                .split('\n')
+                                .where((element) => element.isNotEmpty)
+                                .toList(),
+                      );
+                      sl<DatabaseHelper>().insertRecipe(recipe);
+                      Navigator.pop(context);
+                    }
                   }
                 },
                 child: Text('Save'),
