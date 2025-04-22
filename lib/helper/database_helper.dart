@@ -9,28 +9,52 @@ class DatabaseHelper {
   final AppDatabase _db = sl<AppDatabase>();
 
   Stream<List<RecipeData>> getRecipes() {
-    return (_db.select(_db.recipeTable)).watch();
+    return (_db.select(_db.recipeTable)
+      ..where((tbl) => tbl.status.equals('available'))).watch();
   }
 
-  /// Upsert a recipe into the database.
+  /// Insert a recipe into the database, ignoring any conflict if the recipe
+  /// already exists.
   ///
-  /// If the recipe already exists in the database (i.e. the recipeId is already
-  /// present), then the existing record is updated with the provided values.
-  /// Otherwise, a new record is inserted.
+  /// Returns the id of the inserted recipe.
   ///
-  /// Returns the id of the upserted recipe.
-  Future<int> upsertRecipe(Recipe recipe) async {
+  /// If the recipe already exists in the database, this method does nothing
+  /// and returns the id of the existing recipe.
+  Future<int> insertRecipeIgnoringConflict(Recipe recipe) async {
     return await _db
         .into(_db.recipeTable)
-        .insertOnConflictUpdate(
+        .insert(
           RecipeTableCompanion(
-            recipeId: Value(recipe.id),
+            recipeId: Value(recipe.id ?? 0),
+            typeId: Value(recipe.typeId),
+            name: Value(recipe.name),
+            image: Value(recipe.image.toString()),
+            ingredients: Value(jsonEncode(recipe.ingredients)),
+            steps: Value(jsonEncode(recipe.steps)),
+            status: Value(recipe.status ?? "available"),
+          ),
+          onConflict: DoNothing(), //ignore if recipe already exists
+        );
+  }
+
+  /// Insert a recipe into the database.
+  ///
+  /// If a recipe with the given id already exists, this throws a
+  /// [DatabaseException].
+  ///
+  /// Returns the id of the inserted recipe.
+  Future<int> insertRecipe(Recipe recipe) async {
+    return await _db
+        .into(_db.recipeTable)
+        .insert(
+          RecipeTableCompanion(
             typeId: Value(recipe.typeId),
             name: Value(recipe.name),
             image: Value(recipe.image.toString()),
             ingredients: Value(jsonEncode(recipe.ingredients)),
             steps: Value(jsonEncode(recipe.steps)),
           ),
+          mode: InsertMode.insert,
         );
   }
 
@@ -53,14 +77,47 @@ class DatabaseHelper {
   }
 
   // Update an existing recipe
-  Future<bool> updateRecipe(RecipeData recipe) {
-    return _db.update(_db.recipeTable).replace(recipe);
+  Future updateRecipe(RecipeData recipe) async {
+    return (_db.update(_db.recipeTable)
+      ..where((tbl) => tbl.recipeId.equals(recipe.recipeId))
+      ..write(
+        RecipeTableCompanion(
+          recipeId: Value(recipe.recipeId),
+          typeId: Value(recipe.typeId),
+          name: Value(recipe.name),
+          image: Value(recipe.image.toString()),
+          ingredients: Value(recipe.ingredients),
+          steps: Value(recipe.steps),
+        ),
+      ));
+
+    // return (_db.update(_db.recipeTable)
+    //   ..where((tbl) => tbl.recipeId.equals(recipe.recipeId))
+    //   ..write(
+    //     RecipeTableCompanion(
+    //       recipeId: Value(recipe.recipeId),
+    //       typeId: Value(recipe.typeId),
+    //       name: Value(recipe.name),
+    //       image: Value(recipe.image.toString()),
+    //       ingredients: Value(jsonEncode(recipe.ingredients)),
+    //       steps: Value(jsonEncode(recipe.steps)),
+    //     ),
+    //   ));
   }
 
   // Delete a recipe by ID
-  Future<int> deleteRecipe(int id) {
-    return (_db.delete(_db.recipeTable)
-      ..where((tbl) => tbl.recipeId.equals(id))).go();
+  Future deleteRecipe(int id) async {
+    //  return (_db.delete(_db.recipeTable)
+    //   ..where((tbl) => tbl.recipeId.equals(id))).go(); // removed change to soft delete instead
+
+    return (_db.update(_db.recipeTable)
+      ..where((tbl) => tbl.recipeId.equals(id))
+      ..write(
+        RecipeTableCompanion(
+          // Assuming there is a 'status' field to indicate deletion
+          status: Value('deleted'),
+        ),
+      ));
   }
 
   /// Return a list of all the recipe types
