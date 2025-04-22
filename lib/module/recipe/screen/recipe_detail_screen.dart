@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -29,6 +30,16 @@ class RecipeDetailScreen extends StatelessWidget {
                 MaterialPageRoute(
                   builder: (context) => EditRecipeDetailScreen(recipe: recipe),
                 ),
+              );
+            },
+          ),
+          IconButton(
+            icon: Icon(Icons.delete),
+            onPressed: () async {
+              await sl<DatabaseHelper>().deleteRecipe(recipe.recipeId);
+              Navigator.of(context).pushAndRemoveUntil(
+                MaterialPageRoute(builder: (context) => RecipeListScreen()),
+                (route) => false,
               );
             },
           ),
@@ -106,21 +117,7 @@ class RecipeDetailScreenState extends State<EditRecipeDetailScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Recipe Detail'),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.delete),
-            onPressed: () async {
-              await sl<DatabaseHelper>().deleteRecipe(widget.recipe.recipeId);
-              Navigator.of(context).pushAndRemoveUntil(
-                MaterialPageRoute(builder: (context) => RecipeListScreen()),
-                (route) => false,
-              );
-            },
-          ),
-        ],
-      ),
+      appBar: AppBar(title: Text('Recipe Detail')),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Form(
@@ -273,9 +270,21 @@ class RecipeDetailScreenState extends State<EditRecipeDetailScreen> {
                       typeId: widget.recipe.typeId,
                       name: _nameController.text,
                       image: _imageController.text,
-                      ingredients: _ingredientsController.text,
-                      steps: _stepsController.text,
+                      ingredients: jsonEncode(
+                        _ingredientsController.text
+                            .split(', ')
+                            .map((ingredient) => ingredient.trim())
+                            .toList(),
+                      ),
+                      steps: jsonEncode(
+                        _stepsController.text
+                            .split(', ')
+                            .map((step) => step.trim())
+                            .toList(),
+                      ),
+                      status: widget.recipe.status,
                     );
+                    log("recipe to edit $recipe");
                     await sl<DatabaseHelper>().updateRecipe(recipe);
                     Navigator.of(context).pushAndRemoveUntil(
                       MaterialPageRoute(
