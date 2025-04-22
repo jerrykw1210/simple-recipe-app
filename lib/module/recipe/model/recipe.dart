@@ -35,7 +35,7 @@ class Recipe {
   factory Recipe.fromJson(Map<String, dynamic> json) {
     return Recipe(
       id: json['id'],
-      typeId: json['typeId'],
+      typeId: json['recipeTypeId'],
       name: json['name'],
       image: json['image'],
       ingredients: List<String>.from(json['ingredients']),
