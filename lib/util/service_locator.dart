@@ -3,6 +3,9 @@ import 'dart:developer';
 import 'package:get_it/get_it.dart';
 import 'package:simple_recipe_app/database/database.dart';
 import 'package:simple_recipe_app/helper/database_helper.dart';
+import 'package:simple_recipe_app/module/recipe/model/recipe.dart';
+import 'package:simple_recipe_app/module/recipe/repository/recipe_repository.dart';
+import 'package:simple_recipe_app/module/recipe/service/recipe_service.dart';
 
 final sl = GetIt.instance;
 
@@ -22,6 +25,12 @@ Future<void> registerDBSingleton() async {
     // Register the AppDatabase singleton
     registerLazySingleton<AppDatabase>(() => AppDatabase());
     registerLazySingleton<DatabaseHelper>(() => DatabaseHelper());
+
+    // repository
+    registerLazySingleton<RecipeRepository>(() => RecipeRepository());
+
+    // service
+    registerLazySingleton<RecipeService>(() => RecipeService());
   } catch (e) {
     log("error when starting service locator $e");
   }
