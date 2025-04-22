@@ -104,6 +104,10 @@ class _NewRecipeScreenState extends State<NewRecipeScreen> {
                       }
                       if (state.fetchRecipeTypeStatus ==
                           FetchRecipeTypeStatus.success) {
+                        List<RecipeTypesTableData> recipeTypes =
+                            state.recipeTypes
+                                .where((recipeType) => recipeType.typeId != 0)
+                                .toList(); // remove 'all' type
                         return Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 16),
                           child: DropdownButtonFormField(
@@ -113,9 +117,7 @@ class _NewRecipeScreenState extends State<NewRecipeScreen> {
                             ),
                             value: _selectedTypeId,
                             items:
-                                state.recipeTypes.map((
-                                  RecipeTypesTableData type,
-                                ) {
+                                recipeTypes.map((RecipeTypesTableData type) {
                                   return DropdownMenuItem(
                                     value: type.typeId,
                                     child: Text(type.name),
@@ -171,7 +173,8 @@ class _NewRecipeScreenState extends State<NewRecipeScreen> {
               const SizedBox(height: 16),
               ElevatedButton(
                 onPressed: () {
-                  if (_formKey.currentState!.validate()) {
+                  if (_formKey.currentState!.validate() &&
+                      _imageController.text.isNotEmpty) {
                     final file = File(
                       '${Helper.directory?.path}/${_imageController.text.split('/').last}',
                     );
@@ -179,7 +182,6 @@ class _NewRecipeScreenState extends State<NewRecipeScreen> {
                       File(_imageController.text).readAsBytesSync(),
                     );
                     final recipe = Recipe(
-                      id: 0,
                       typeId: _selectedTypeId,
                       name: _nameController.text,
                       image: _imageController.text.split('/').last,
@@ -194,7 +196,7 @@ class _NewRecipeScreenState extends State<NewRecipeScreen> {
                               .where((element) => element.isNotEmpty)
                               .toList(),
                     );
-                    sl<DatabaseHelper>().upsertRecipe(recipe);
+                    sl<DatabaseHelper>().insertRecipe(recipe);
                     Navigator.pop(context);
                   }
                 },
