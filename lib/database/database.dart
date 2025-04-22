@@ -1,4 +1,3 @@
-
 import 'package:drift/drift.dart';
 import 'package:drift_flutter/drift_flutter.dart';
 import 'package:path_provider/path_provider.dart';
@@ -25,6 +24,7 @@ class RecipeTable extends Table {
   TextColumn get image => text()();
   TextColumn get ingredients => text()();
   TextColumn get steps => text()();
+  TextColumn get status => text().withDefault(const Constant('available'))();
 
   @override
   Set<Column> get primaryKey => {recipeId};

@@ -278,6 +278,16 @@ class $RecipeTableTable extends RecipeTable
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _statusMeta = const VerificationMeta('status');
+  @override
+  late final GeneratedColumn<String> status = GeneratedColumn<String>(
+    'status',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('available'),
+  );
   @override
   List<GeneratedColumn> get $columns => [
     recipeId,
@@ -286,6 +296,7 @@ class $RecipeTableTable extends RecipeTable
     image,
     ingredients,
     steps,
+    status,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -348,6 +359,12 @@ class $RecipeTableTable extends RecipeTable
     } else if (isInserting) {
       context.missing(_stepsMeta);
     }
+    if (data.containsKey('status')) {
+      context.handle(
+        _statusMeta,
+        status.isAcceptableOrUnknown(data['status']!, _statusMeta),
+      );
+    }
     return context;
   }
 
@@ -387,6 +404,11 @@ class $RecipeTableTable extends RecipeTable
             DriftSqlType.string,
             data['${effectivePrefix}steps'],
           )!,
+      status:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}status'],
+          )!,
     );
   }
 
@@ -403,6 +425,7 @@ class RecipeData extends DataClass implements Insertable<RecipeData> {
   final String image;
   final String ingredients;
   final String steps;
+  final String status;
   const RecipeData({
     required this.recipeId,
     required this.typeId,
@@ -410,6 +433,7 @@ class RecipeData extends DataClass implements Insertable<RecipeData> {
     required this.image,
     required this.ingredients,
     required this.steps,
+    required this.status,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -420,6 +444,7 @@ class RecipeData extends DataClass implements Insertable<RecipeData> {
     map['image'] = Variable<String>(image);
     map['ingredients'] = Variable<String>(ingredients);
     map['steps'] = Variable<String>(steps);
+    map['status'] = Variable<String>(status);
     return map;
   }
 
@@ -431,6 +456,7 @@ class RecipeData extends DataClass implements Insertable<RecipeData> {
       image: Value(image),
       ingredients: Value(ingredients),
       steps: Value(steps),
+      status: Value(status),
     );
   }
 
@@ -446,6 +472,7 @@ class RecipeData extends DataClass implements Insertable<RecipeData> {
       image: serializer.fromJson<String>(json['image']),
       ingredients: serializer.fromJson<String>(json['ingredients']),
       steps: serializer.fromJson<String>(json['steps']),
+      status: serializer.fromJson<String>(json['status']),
     );
   }
   @override
@@ -458,6 +485,7 @@ class RecipeData extends DataClass implements Insertable<RecipeData> {
       'image': serializer.toJson<String>(image),
       'ingredients': serializer.toJson<String>(ingredients),
       'steps': serializer.toJson<String>(steps),
+      'status': serializer.toJson<String>(status),
     };
   }
 
@@ -468,6 +496,7 @@ class RecipeData extends DataClass implements Insertable<RecipeData> {
     String? image,
     String? ingredients,
     String? steps,
+    String? status,
   }) => RecipeData(
     recipeId: recipeId ?? this.recipeId,
     typeId: typeId ?? this.typeId,
@@ -475,6 +504,7 @@ class RecipeData extends DataClass implements Insertable<RecipeData> {
     image: image ?? this.image,
     ingredients: ingredients ?? this.ingredients,
     steps: steps ?? this.steps,
+    status: status ?? this.status,
   );
   RecipeData copyWithCompanion(RecipeTableCompanion data) {
     return RecipeData(
@@ -485,6 +515,7 @@ class RecipeData extends DataClass implements Insertable<RecipeData> {
       ingredients:
           data.ingredients.present ? data.ingredients.value : this.ingredients,
       steps: data.steps.present ? data.steps.value : this.steps,
+      status: data.status.present ? data.status.value : this.status,
     );
   }
 
@@ -496,14 +527,15 @@ class RecipeData extends DataClass implements Insertable<RecipeData> {
           ..write('name: $name, ')
           ..write('image: $image, ')
           ..write('ingredients: $ingredients, ')
-          ..write('steps: $steps')
+          ..write('steps: $steps, ')
+          ..write('status: $status')
           ..write(')'))
         .toString();
   }
 
   @override
   int get hashCode =>
-      Object.hash(recipeId, typeId, name, image, ingredients, steps);
+      Object.hash(recipeId, typeId, name, image, ingredients, steps, status);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -513,7 +545,8 @@ class RecipeData extends DataClass implements Insertable<RecipeData> {
           other.name == this.name &&
           other.image == this.image &&
           other.ingredients == this.ingredients &&
-          other.steps == this.steps);
+          other.steps == this.steps &&
+          other.status == this.status);
 }
 
 class RecipeTableCompanion extends UpdateCompanion<RecipeData> {
@@ -523,6 +556,7 @@ class RecipeTableCompanion extends UpdateCompanion<RecipeData> {
   final Value<String> image;
   final Value<String> ingredients;
   final Value<String> steps;
+  final Value<String> status;
   const RecipeTableCompanion({
     this.recipeId = const Value.absent(),
     this.typeId = const Value.absent(),
@@ -530,6 +564,7 @@ class RecipeTableCompanion extends UpdateCompanion<RecipeData> {
     this.image = const Value.absent(),
     this.ingredients = const Value.absent(),
     this.steps = const Value.absent(),
+    this.status = const Value.absent(),
   });
   RecipeTableCompanion.insert({
     this.recipeId = const Value.absent(),
@@ -538,6 +573,7 @@ class RecipeTableCompanion extends UpdateCompanion<RecipeData> {
     required String image,
     required String ingredients,
     required String steps,
+    this.status = const Value.absent(),
   }) : typeId = Value(typeId),
        name = Value(name),
        image = Value(image),
@@ -550,6 +586,7 @@ class RecipeTableCompanion extends UpdateCompanion<RecipeData> {
     Expression<String>? image,
     Expression<String>? ingredients,
     Expression<String>? steps,
+    Expression<String>? status,
   }) {
     return RawValuesInsertable({
       if (recipeId != null) 'recipe_id': recipeId,
@@ -558,6 +595,7 @@ class RecipeTableCompanion extends UpdateCompanion<RecipeData> {
       if (image != null) 'image': image,
       if (ingredients != null) 'ingredients': ingredients,
       if (steps != null) 'steps': steps,
+      if (status != null) 'status': status,
     });
   }
 
@@ -568,6 +606,7 @@ class RecipeTableCompanion extends UpdateCompanion<RecipeData> {
     Value<String>? image,
     Value<String>? ingredients,
     Value<String>? steps,
+    Value<String>? status,
   }) {
     return RecipeTableCompanion(
       recipeId: recipeId ?? this.recipeId,
@@ -576,6 +615,7 @@ class RecipeTableCompanion extends UpdateCompanion<RecipeData> {
       image: image ?? this.image,
       ingredients: ingredients ?? this.ingredients,
       steps: steps ?? this.steps,
+      status: status ?? this.status,
     );
   }
 
@@ -600,6 +640,9 @@ class RecipeTableCompanion extends UpdateCompanion<RecipeData> {
     if (steps.present) {
       map['steps'] = Variable<String>(steps.value);
     }
+    if (status.present) {
+      map['status'] = Variable<String>(status.value);
+    }
     return map;
   }
 
@@ -611,7 +654,8 @@ class RecipeTableCompanion extends UpdateCompanion<RecipeData> {
           ..write('name: $name, ')
           ..write('image: $image, ')
           ..write('ingredients: $ingredients, ')
-          ..write('steps: $steps')
+          ..write('steps: $steps, ')
+          ..write('status: $status')
           ..write(')'))
         .toString();
   }
@@ -908,6 +952,7 @@ typedef $$RecipeTableTableCreateCompanionBuilder =
       required String image,
       required String ingredients,
       required String steps,
+      Value<String> status,
     });
 typedef $$RecipeTableTableUpdateCompanionBuilder =
     RecipeTableCompanion Function({
@@ -917,6 +962,7 @@ typedef $$RecipeTableTableUpdateCompanionBuilder =
       Value<String> image,
       Value<String> ingredients,
       Value<String> steps,
+      Value<String> status,
     });
 
 final class $$RecipeTableTableReferences
@@ -974,6 +1020,11 @@ class $$RecipeTableTableFilterComposer
 
   ColumnFilters<String> get steps => $composableBuilder(
     column: $table.steps,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get status => $composableBuilder(
+    column: $table.status,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -1035,6 +1086,11 @@ class $$RecipeTableTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   $$RecipeTypesTableTableOrderingComposer get typeId {
     final $$RecipeTypesTableTableOrderingComposer composer = $composerBuilder(
       composer: this,
@@ -1084,6 +1140,9 @@ class $$RecipeTableTableAnnotationComposer
 
   GeneratedColumn<String> get steps =>
       $composableBuilder(column: $table.steps, builder: (column) => column);
+
+  GeneratedColumn<String> get status =>
+      $composableBuilder(column: $table.status, builder: (column) => column);
 
   $$RecipeTypesTableTableAnnotationComposer get typeId {
     final $$RecipeTypesTableTableAnnotationComposer composer = $composerBuilder(
@@ -1144,6 +1203,7 @@ class $$RecipeTableTableTableManager
                 Value<String> image = const Value.absent(),
                 Value<String> ingredients = const Value.absent(),
                 Value<String> steps = const Value.absent(),
+                Value<String> status = const Value.absent(),
               }) => RecipeTableCompanion(
                 recipeId: recipeId,
                 typeId: typeId,
@@ -1151,6 +1211,7 @@ class $$RecipeTableTableTableManager
                 image: image,
                 ingredients: ingredients,
                 steps: steps,
+                status: status,
               ),
           createCompanionCallback:
               ({
@@ -1160,6 +1221,7 @@ class $$RecipeTableTableTableManager
                 required String image,
                 required String ingredients,
                 required String steps,
+                Value<String> status = const Value.absent(),
               }) => RecipeTableCompanion.insert(
                 recipeId: recipeId,
                 typeId: typeId,
@@ -1167,6 +1229,7 @@ class $$RecipeTableTableTableManager
                 image: image,
                 ingredients: ingredients,
                 steps: steps,
+                status: status,
               ),
           withReferenceMapper:
               (p0) =>
